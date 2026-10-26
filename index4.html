@@ -87,7 +87,7 @@
 <div class="content">
 <section class="page active" id="page-home">
 <div class="stats">
-<div class="stat"><div><div class="label">إجمالي الطلاب</div><div class="num" id="statStudents">1</div></div><div class="bubble">👥</div></div>
+<div class="stat"><div><div class="label">إجمالي الطلاب</div><div class="num" id="statStudents">57</div></div><div class="bubble">👥</div></div>
 <div class="stat"><div><div class="label">الحاضرون في آخر تسجيل</div><div class="num" id="statPresent">—</div></div><div class="bubble" style="background:#e3f8ef;color:#19a779">✓</div></div>
 <div class="stat"><div><div class="label">الغائبون في آخر تسجيل</div><div class="num" id="statAbsent">—</div></div><div class="bubble" style="background:#ffe8ed;color:#e94d68">✕</div></div>
 <div class="stat"><div><div class="label">متوسط الدرجات المسجلة</div><div class="num" id="statAverage">—</div></div><div class="bubble" style="background:#fff2d9;color:#d68b00">★</div></div>
@@ -147,7 +147,7 @@
 <section class="page" id="page-reports">
 <div class="card"><div class="cardhead"><h2>التقارير والإحصائيات</h2><div class="toolbar"><button class="primary" onclick="printFullReport()">🖨️ طباعة التقرير الشامل</button><button class="secondary" onclick="exportCSV('students')">تنزيل قائمة الطلاب CSV</button></div></div>
 <div class="reportgrid">
-<div class="reportbox">إجمالي الطلاب<b id="rStudents">1</b></div>
+<div class="reportbox">إجمالي الطلاب<b id="rStudents">57</b></div>
 <div class="reportbox">إجمالي سجلات الدرجات<b id="rGrades">0</b></div>
 <div class="reportbox">إجمالي سجلات الحضور<b id="rAtt">0</b></div>
 <div class="reportbox">متوسط الدرجات العام<b id="rAvg">—</b></div>
@@ -173,9 +173,10 @@
 const KEY='deacons3_weekly_tracker_v1';
 const FIREBASE_DB_URL='https://deacons3-default-rtdb.europe-west1.firebasedatabase.app';
 const PENDING_KEY=KEY+'_pendingSync';
+const ROSTER_MIGRATION_KEY=KEY+'_roster_migration_20261026';
 let remoteReady=false, remoteBusy=false, saveTimer=null, lastRemoteSnapshot='', pendingSync=localStorage.getItem(PENDING_KEY)==='1', retryDelay=2000;
 function setSyncStatus(message,color='#a96b00'){const el=document.getElementById('syncStatus');if(el){el.textContent=message;el.style.color=color}}
-const initial=()=>({students:[{id:1,name:'يوسف',notes:''}],subjects:['رياضيات','لغة عربية','لغة إنجليزية','حاسب آلي'],grades:[],attendance:[],nextStudentId:2});
+const initial=()=>({students:['ارميا بيشوي', 'اشرف نادر', 'انطونيوس ايمن', 'انطونيوس يوسف', 'بيتر كيرلس', 'بيشوى جميل', 'جرجس رومانى', 'جرجس مينا', 'جميل سمير', 'جوفانى شنوده', 'جون ايمن', 'جون عزت', 'جون عماد', 'داود عطيه', 'شنوده ملاك', 'شنوده ميلاد', 'شنوده يونان', 'صموئيل متياس', 'فلوباتير هانى', 'كاراس اسامه', 'كاراس جرجس', 'كاراس رامى', 'كاراس صفوت', 'كاراس عادل', 'كاراس منصور', 'كراس مينا', 'كراس مينا بخيت', 'كرم ناشد', 'كريستوفر ابرام', 'كريستيانو رامي', 'كيرلس فيليبس', 'ماثيو هانى', 'مارسلينو سامح', 'مايكل مينا', 'مجدي ماجد', 'مكارى عصمت', 'مكسيموس مايكل', 'ميخائيل مينا عبد السيد', 'مينا شنوده', 'نوفير رومانى', 'نوفير مينا', 'يسى عادل', 'يوئيل كريم', 'يوسف بيشوى', 'ارميا بيشوى', 'استيفن بشير', 'بولا مينا', 'جمير سمير', 'فيلوباتير هانى', 'كاراس فنجرى', 'كاراس مينا بخيت', 'كاراس مينا كريم', 'كرستوفر ابرام', 'كرستيانو رامى', 'كيرلس فيلبس', 'مجدى ماجد', 'ميخائيل مينا'].map((name,i)=>({id:i+1,name,notes:''})),subjects:['رياضيات','لغة عربية','لغة إنجليزية','حاسب آلي'],grades:[],attendance:[],nextStudentId:58});
 let db=load();
 function load(){try{const x=JSON.parse(localStorage.getItem(KEY));if(x&&Array.isArray(x.students))return x}catch(e){}return initial()}
 function save(){
@@ -192,7 +193,7 @@ async function pushToFirebase(){
     const controller=new AbortController();const timeout=setTimeout(()=>controller.abort(),15000);
     let response;try{response=await fetch(FIREBASE_DB_URL+'/deacons3_weekly_tracker.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:payload,signal:controller.signal})}finally{clearTimeout(timeout)}
     if(!response.ok)throw new Error('HTTP '+response.status);
-    lastRemoteSnapshot=payload;pendingSync=false;retryDelay=2000;localStorage.setItem(KEY,payload);localStorage.removeItem(PENDING_KEY);setSyncStatus('✓ تمت المزامنة والحفظ السحابي','#087c54');
+    lastRemoteSnapshot=payload;pendingSync=false;retryDelay=2000;localStorage.setItem(KEY,payload);localStorage.removeItem(PENDING_KEY);if(localStorage.getItem(ROSTER_MIGRATION_KEY)==='pending')localStorage.setItem(ROSTER_MIGRATION_KEY,'done');setSyncStatus('✓ تمت المزامنة والحفظ السحابي','#087c54');
   }catch(err){console.error('Firebase save failed:',err);pendingSync=true;try{localStorage.setItem(PENDING_KEY,'1')}catch(e){};remoteReady=false;setSyncStatus('⚠️ لم يتأكد الحفظ السحابي — سيُعاد المحاولة تلقائيًا','#c93450');scheduleReconnect();toast('تعذر تأكيد الحفظ السحابي. بياناتك موجودة محليًا وسيُعاد الاتصال تلقائيًا')}
   finally{remoteBusy=false}
 }
@@ -205,16 +206,17 @@ async function connectFirebase(){
     try{response=await fetch(FIREBASE_DB_URL+'/deacons3_weekly_tracker.json',{signal:controller.signal})}finally{clearTimeout(timeout)}
     if(!response.ok)throw new Error('قراءة البيانات: HTTP '+response.status);
     const remote=await response.json();
-    const rosterResetKey=KEY+'_youssef_only_migration_v1';
-    if(localStorage.getItem(rosterResetKey)!=='1'){
-      // First connection after this edit: keep this tracker separate, with only Yusuf and no old student records.
-      db={...initial(),subjects:Array.isArray(remote?.subjects)?remote.subjects:initial().subjects,students:[{id:1,name:'يوسف',notes:''}],grades:[],attendance:[],nextStudentId:2};
+    if(localStorage.getItem(ROSTER_MIGRATION_KEY)!=='done'){
+      // Replace old students and attendance/grade records once; preserve existing subjects.
+      const fresh=initial();
+      if(remote&&Array.isArray(remote.subjects))fresh.subjects=remote.subjects;
+      db=fresh;
       localStorage.setItem(KEY,JSON.stringify(db));
+      localStorage.setItem(ROSTER_MIGRATION_KEY,'pending');
       pendingSync=true;
       localStorage.setItem(PENDING_KEY,'1');
-      localStorage.setItem(rosterResetKey,'1');
-      renderAll();
-    }else if(remote&&Array.isArray(remote.students)){
+    }
+    if(remote&&Array.isArray(remote.students)){
       if(pendingSync){
         // Local changes not yet confirmed are kept and uploaded instead of being overwritten by remote data.
         db=load();
